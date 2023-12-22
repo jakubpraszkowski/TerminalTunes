@@ -1,52 +1,32 @@
-#ifndef MUSICLIBRARY_SONG_HPP
-#define MUSICLIBRARY_SONG_HPP
+#ifndef MUSICLIBRARY_INCLUDE_AUDIO_PLAYER_SONG_HPP
+#define MUSICLIBRARY_INCLUDE_AUDIO_PLAYER_SONG_HPP
 
 #include <string>
-#include <iostream>
-#include "MusicItem.hpp"
 
-class Song : public MusicItem{
-    std::string album;
-    std::string genre;
-    u_int year = 0;
-
-public:
+class Song {
+  public:
     Song() = default;
 
-    Song(std::string title, std::string artist, std::string album, std::string genre,
-         u_int year, int duration);
+    Song(
+        const std::string &title, const std::string &artist,
+        const std::string &album, const std::string &genre, unsigned int year,
+        int duration, const std::string &path);
 
-    u_int calculateDuration() override;
-
-    u_int getYear();
-
-    Song createSong();
+    Song(const std::string &title, int duration);
 
     const std::string &getTitle() const;
 
-    void setTitle(const std::string &title);
-
     const std::string &getArtist() const;
-
-    void setArtist(const std::string &artist);
 
     const std::string &getAlbum() const;
 
-    void setAlbum(const std::string &album);
-
     const std::string &getGenre() const;
 
-    void setGenre(const std::string &genre);
+    const unsigned int getYear() const;
 
-    u_int getYear() const;
+    const int getDuration() const;
 
-    void setYear(u_int year);
-
-    int getDuration() const;
-
-    void setDuration(int duration);
-
-    friend std::ostream &operator<<(std::ostream &os, const Song &song);
+    const std::string &getPath() const;
 
     static bool compareByDuration(const Song &s1, const Song &s2);
 
@@ -60,7 +40,17 @@ public:
 
     static bool compareByYear(const Song &s1, const Song &s2);
 
+  protected:
+    std::string name;
+    std::string creator;
+    unsigned int size;
+    unsigned int duration;
+    std::string album;
+
+  private:
+    std::string genre;
+    unsigned int year = 0;
+    std::string path;
 };
 
-
-#endif //MUSICLIBRARY_SONG_HPP
+#endif // MUSICLIBRARY_SONG_HPP

@@ -1,0 +1,14 @@
+# BasedOnStyle: LLVM
+# AlignAfterOpenBracket: AlwaysBreak
+# AlignEscapedNewlines: Left
+# IndentWidth: 4
+# Language: Cpp
+{
+  "BasedOnStyle": "LLVM",
+  "AlignAfterOpenBracket": "AlwaysBreak",
+  "AlignEscapedNewlines": "Left",
+  "IndentWidth": 4,
+  "Language": "Cpp",
+  "SortIncludes": true,
+  "SortUsingDeclarations": true,
+}
