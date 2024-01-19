@@ -1,17 +1,12 @@
 #include "../include/Audio-player/Playlist.hpp"
 
-Playlist Playlist::createPlaylist() {
-    std::cout << "Enter the title of the playlist: ";
-    std::cin >> name;
-    Playlist p1(name, creator, playlistSongs, year);
-    return p1;
-}
+Playlist::Playlist(
+    const std::string &title, const std::string &creator,
+    songsVector &playlistSongs, std::tm year) {
+    name = title;
 
-Playlist::Playlist(std::string name, const std::string& creator, const std::vector<std::shared_ptr<Song>>& playlistSongs, std::tm year) {
-    this->name = name;
-
-    char* envUsername = std::getenv("USERNAME");
-    if(envUsername != nullptr) {
+    char *envUsername = std::getenv("USERNAME");
+    if (envUsername != nullptr) {
         this->creator = envUsername;
     } else {
         this->creator = "Unknown";
@@ -19,11 +14,37 @@ Playlist::Playlist(std::string name, const std::string& creator, const std::vect
 
     this->playlistSongs = playlistSongs;
 
-    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::chrono::system_clock::time_point now =
+        std::chrono::system_clock::now();
     std::time_t now_time = std::chrono::system_clock::to_time_t(now);
     year = *std::localtime(&now_time);
     this->year = year;
+}
 
+Playlist::Playlist(const std::string &title) { name = title; }
+
+Playlist::Playlist(const Playlist &otherPlaylist)
+    : playlistSongs(otherPlaylist.playlistSongs) {
+    std::copy(
+        otherPlaylist.playlistSongs.begin(), otherPlaylist.playlistSongs.end(),
+        playlistSongs.begin());
+    name = otherPlaylist.name;
+    creator = otherPlaylist.creator;
+    year = otherPlaylist.year;
+}
+
+Playlist &Playlist::operator=(const Playlist &otherPlaylist) {
+    if (this == &otherPlaylist) {
+        return *this;
+    }
+    std::copy(
+        otherPlaylist.playlistSongs.begin(), otherPlaylist.playlistSongs.end(),
+        playlistSongs.begin());
+    name = otherPlaylist.name;
+    creator = otherPlaylist.creator;
+    year = otherPlaylist.year;
+
+    return *this;
 }
 
 bool Playlist::compareByDuration(const Playlist &p1, const Playlist &p2) {
@@ -51,29 +72,24 @@ bool Playlist::compareByYear(const Playlist &p1, const Playlist &p2) {
     }
 }
 
-void Playlist::addSongToPlaylist(const std::shared_ptr<Song>& song, const std::string &playlistTitle, std::vector<Song> &_playlistSongs) {
+void Playlist::addSongToPlaylist(
+    const std::shared_ptr<Song> &song, const std::string &playlistTitle,
+    std::vector<Song> &_playlistSongs) {
     playlistSongs.push_back(song);
-    std::cout << "Song " << song->getTitle() << " added to playlist " << playlistTitle << std::endl;
 }
 
 void Playlist::removeSongFromPlaylist(const std::string &songTitle) {
-    for (auto & playlistSong : playlistSongs) {
+    for (auto &playlistSong : playlistSongs) {
         if (playlistSong->getTitle() == songTitle) {
             playlistSongs.erase(playlistSongs.begin());
-            std::cout << "Song " << songTitle << " removed from playlist " << name << std::endl;
         }
     }
 }
 
 u_int Playlist::calculateDuration() {
     u_int duration = 0;
-    for(const auto& song : playlistSongs) {
+    for (const auto &song : playlistSongs) {
         duration += song->getDuration();
     }
     return duration;
-}
-
-std::ostream &operator<<(std::ostream &os, const Playlist &pl){
-    os << "Title: " << pl.name << " Artist: " << pl.creator << " Year: " << std::put_time(&pl.year, "%Y-%m-%d %H:%M:%S") << " Duration: " << pl.duration;
-    return os;
 }

@@ -1,35 +1,51 @@
-#ifndef MUSICLIBRARY_PLAYLIST_HPP
-#define MUSICLIBRARY_PLAYLIST_HPP
+#ifndef MUSICLIBRARY_INCLUDE_AUDIO_PLAYER_PLAYLIST_HPP
+#define MUSICLIBRARY_INCLUDE_AUDIO_PLAYER_PLAYLIST_HPP
 
+#include <chrono>
+#include <ctime>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <ctime>
-#include <chrono>
-#include <utility>
-#include <iomanip>
+
 #include "Song.hpp"
 
-class Playlist : public MusicItem {
-    std::vector<std::shared_ptr<Song>> playlistSongs;
-    std::tm year{};
+class Playlist : public Song {
+  public:
+    using songsVector = std::vector<std::shared_ptr<Song>>;
 
-public:
     Playlist() = default;
-    Playlist(std::string title, const std::string& artist, const std::vector<std::shared_ptr<Song>>& playlistSongs, std::tm year);
-    Playlist createPlaylist();
-    u_int calculateDuration() override;
 
-    static bool compareByDuration(const Playlist& p1, const Playlist& p2);
-    static bool compareByTitle(const Playlist& p1, const Playlist& p2);
-    static bool compareByCreator(const Playlist& p1, const Playlist& p2);
-    static bool compareByYear(const Playlist& p1, const Playlist& p2);
+    Playlist(
+        const std::string &title, const std::string &artist,
+        songsVector &playlistSongs, std::tm year);
 
-    void addSongToPlaylist(const std::shared_ptr<Song>& song, const std::string& playlistTitle, std::vector<Song>& playlistSongs);
-    void removeSongFromPlaylist(const std::string& songTitle);
+    Playlist(const std::string &title);
 
-    friend std::ostream &operator<<(std::ostream &os, const Playlist &pl);
+    Playlist(const Playlist &otherPlaylist);
+
+    Playlist &operator=(const Playlist &otherPlaylist);
+
+    ~Playlist() = default;
+
+    bool compareByDuration(const Playlist &p1, const Playlist &p2);
+
+    bool compareByTitle(const Playlist &p1, const Playlist &p2);
+
+    bool compareByCreator(const Playlist &p1, const Playlist &p2);
+
+    bool compareByYear(const Playlist &p1, const Playlist &p2);
+
+    void addSongToPlaylist(
+        const std::shared_ptr<Song> &song, const std::string &playlistTitle,
+        std::vector<Song> &playlistSongs);
+
+    void removeSongFromPlaylist(const std::string &songTitle);
+
+    unsigned int calculateDuration();
+
+  private:
+    songsVector playlistSongs;
+    std::tm year{};
 };
 
-
-#endif //MUSICLIBRARY_PLAYLIST_HPP
+#endif // MUSICLIBRARY_PLAYLIST_HPP

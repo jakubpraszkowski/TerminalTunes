@@ -1,67 +1,75 @@
-#include <algorithm>
 #include "../include/Audio-player/MusicLibrary.hpp"
 
-MusicLibrary::MusicLibrary(fs::path _directory){
+MusicLibrary::MusicLibrary(fs::path _directory) {
     this->directory = "/home/${USER}/Music";
 }
 
-void MusicLibrary::addSong(const Song& song) {
-    songs.push_back(song);
+void MusicLibrary::addPlaylist(const Playlist &playlist) {
+    allPlaylists.push_back(playlist);
 }
-
-void MusicLibrary::addPlaylist(const Playlist& playlist) {
-    playlists.push_back(playlist);
-}
-
-//template <typename T>
-//void MusicLibrary::removeItem(const std::string &itemTitle) {
-//    if (std::is_same<T, Song>::value) {
-//        for (auto it = songs.begin(); it != songs.end(); ++it) {
-//            if (it->getTitle() == itemTitle) {
-//                songs.erase(it);
-//                std::cout << "Song '" << itemTitle << "' removed from the library." << std::endl;
-//                return;
-//            }
-//        }
-//        std::cout << "Song '" << itemTitle << "' not found in the library." << std::endl;
-//    } else if (std::is_same<T, Playlist>::value) {
-//        for (auto it = playlists.begin(); it != playlists.end(); ++it) {
-//            if (it->getTitle() == itemTitle) {
-//                playlists.erase(it);
-//                std::cout << "Playlist '" << itemTitle << "' removed from the library." << std::endl;
-//                return;
-//            }
-//        }
-//        std::cout << "Playlist '" << itemTitle << "' not found in the library." << std::endl;
-//    } else {
-//        std::cout << "Error: Invalid type." << std::endl;
-//    }
-//}
 
 template <typename T>
 void MusicLibrary::printVector(const std::vector<T> &vec) {
-    for (const auto& item : *vec) {
+    for (const auto &item : vec) {
         std::cout << item << std::endl;
     }
 }
 
-template <typename T>
-std::vector<T> &MusicLibrary::getVector(){
-     if constexpr (std::is_same_v<T, Playlist>) {
-        return playlists;
-    } else if constexpr (std::is_same_v<T, Song>) {
-        return songs;
-    } else if constexpr (std::is_same_v<T, Album>) {
-        return albums;
-    } else {
-        throw std::runtime_error("Unsupported vector type");
-    }
-}
-
-template<typename T>
-bool MusicLibrary::isEmpty(std::vector<T> &vector) {
+template <typename T> bool MusicLibrary::isEmpty(std::vector<T> &vector) {
     if (vector.empty()) {
         return true;
     }
     return false;
 }
+
+void MusicLibrary::updateSongs(FileManager &fm) {
+    setlocale(LC_ALL, "pl_PL.UTF-8");
+    for (const auto &path : fm.getOggFilePaths()) {
+        TagLib::FileRef f(path.c_str());
+        if (!f.isNull() && f.tag()) {
+            TagLib::Tag *tag = f.tag();
+            std::string title = tag->title().toCString();
+            std::string artist = tag->artist().toCString();
+            std::string albumName = tag->album().toCString();
+            std::string genre = tag->genre().toCString();
+            u_int year = tag->year();
+            int duration = f.audioProperties()->lengthInSeconds();
+            std::shared_ptr<Song> song = std::make_shared<Song>(
+                title, artist, albumName, genre, year, duration, path);
+            allSongs.push_back(song);
+            addSongToAlbum(albumName, song);
+        }
+    }
+}
+
+void MusicLibrary::addSongToAlbum(
+    const std::string &albumName, const std::shared_ptr<Song> &song) {
+    if (allAlbumsMap.find(albumName) == allAlbumsMap.end()) {
+        Album newAlbum(albumName);
+        newAlbum.addSong(song);
+        allAlbumsMap[albumName] = newAlbum;
+        allAlbums.push_back(newAlbum);
+    } else {
+        allAlbumsMap[albumName].addSong(song);
+    }
+}
+
+const std::unordered_map<std::string, Album> &
+MusicLibrary::getAlbumsMap() const {
+    return allAlbumsMap;
+}
+
+std::vector<Album> &MusicLibrary::getAlbums() { return allAlbums; }
+
+Song MusicLibrary::getSong(const std::string &songTitle) {
+    for (auto &songPtr : allSongs) {
+        if (songPtr->getTitle() == songTitle) {
+            return *songPtr;
+        }
+    }
+    throw std::runtime_error("Song not found");
+}
+
+MusicLibrary::songsVector &MusicLibrary::getSongs() { return allSongs; }
+
+std::vector<Playlist> &MusicLibrary::getPlaylists() { return allPlaylists; }
